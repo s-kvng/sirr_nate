@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System UI — reference prototype</title>
+<!-- Reference prototype for SPEC.md. Throwaway code: read it for behavior, timing and styling; do not copy it into the app as-is.
+     URL hashes: (none) = full flow from the notification; #hud = auto-accept; #gate = auto-accept then open the red gate. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=B612+Mono:wght@400;700&family=Bangers&family=Cinzel:wght@700&family=Rajdhani:wght@500;600;700&family=Chakra+Petch:wght@500;700&family=Comic+Neue:wght@700&family=Dela+Gothic+One&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Instrument+Serif&family=JetBrains+Mono:wght@400;600&family=Silkscreen&family=VT323&display=swap">
+<style>
+html,body{height:100%;margin:0;background:#02040a}
+body{font:14px system-ui,-apple-system,sans-serif}
+[hidden]{display:none!important}
+.stage{height:100%}
+.stage>*{height:100%}
+@keyframes blink{50%{opacity:0}}
+/* ───────── SYSTEM AWAKENING ───────── */
+.c-sys{--sb:#49c6ff;--sg:rgba(73,198,255,.55);--sp:#8f5bff;--sr:#ff3b4e;--sgold:#ffd36b;--st:#dff4ff;--sm:#7fa8c4;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 110%,#0c2a4d 0%,#050b18 55%,#02040a 100%);color:var(--st);font-family:"Rajdhani","Chakra Petch",sans-serif}
+.c-sys .mist{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.c-sys .win{position:relative;background:linear-gradient(180deg,rgba(10,28,52,.86),rgba(4,12,26,.92));border:1px solid var(--sg);box-shadow:0 0 22px rgba(73,198,255,.22),inset 0 0 28px rgba(73,198,255,.08);padding:14px 16px;backdrop-filter:blur(3px)}
+.c-sys .win::before{content:"";position:absolute;inset:-4px;pointer-events:none;--c:var(--sb);background:linear-gradient(var(--c),var(--c)) 0 0/14px 2px no-repeat,linear-gradient(var(--c),var(--c)) 0 0/2px 14px no-repeat,linear-gradient(var(--c),var(--c)) 100% 0/14px 2px no-repeat,linear-gradient(var(--c),var(--c)) 100% 0/2px 14px no-repeat,linear-gradient(var(--c),var(--c)) 0 100%/14px 2px no-repeat,linear-gradient(var(--c),var(--c)) 0 100%/2px 14px no-repeat,linear-gradient(var(--c),var(--c)) 100% 100%/14px 2px no-repeat,linear-gradient(var(--c),var(--c)) 100% 100%/2px 14px no-repeat;filter:drop-shadow(0 0 4px var(--c))}
+.c-sys .wt{display:table;margin:0 auto 12px;padding:3px 16px;border:1px solid var(--sg);font-weight:700;font-size:14px;letter-spacing:.32em;text-indent:.32em;text-shadow:0 0 8px var(--sb)}
+.c-sys .open{animation:sys-open .55s cubic-bezier(.2,.9,.2,1) backwards}
+@keyframes sys-open{0%{opacity:0;transform:scale(.3,.02)}45%{opacity:1;transform:scale(1,.02)}100%{transform:none}}
+.c-sys .iwrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;z-index:5}
+.c-sys .intro{width:min(460px,100%);animation-delay:.5s}
+.c-sys .intro.close{animation:sys-close .35s ease-in forwards}
+@keyframes sys-close{40%{transform:scale(1,.02)}100%{opacity:0;transform:scale(.2,.02)}}
+.c-sys .itxt{margin:0 0 14px;font-size:18px;font-weight:500;line-height:1.4;white-space:pre-wrap;min-height:5.6em;text-align:center}
+.c-sys .btns{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.c-sys .sbtn{font:700 14px "Rajdhani",sans-serif;letter-spacing:.2em;color:var(--st);background:rgba(73,198,255,.12);border:1px solid var(--sb);padding:7px 18px;cursor:pointer;text-shadow:0 0 6px var(--sb);transition:background .15s,box-shadow .15s}
+.c-sys .sbtn:hover,.c-sys .sbtn:focus-visible{background:rgba(73,198,255,.3);box-shadow:0 0 16px rgba(73,198,255,.5);outline:none}
+.c-sys .sbtn.ghost{background:transparent;border-color:rgba(73,198,255,.4)}
+.c-sys .sbtn.sm{padding:2px 10px;font-size:12px}
+.c-sys .sbtn:disabled{opacity:.35;cursor:default;box-shadow:none}
+.c-sys .shake{animation:sys-shake .4s}
+@keyframes sys-shake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.c-sys .hud{position:absolute;inset:0;overflow:auto;padding:16px 16px 56px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);grid-template-areas:"status quest" "status shadows" "gates gates";gap:14px;align-content:start;z-index:2}
+.c-sys .status{grid-area:status}.c-sys .quest{grid-area:quest;animation-delay:.15s}.c-sys .shadows{grid-area:shadows;animation-delay:.3s}.c-sys .gates{grid-area:gates;animation-delay:.45s}
+.c-sys .top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;margin-bottom:12px}
+.c-sys .lv{position:relative;text-align:center;min-width:70px}
+.c-sys .lv small,.c-sys .rank small{display:block;font-size:11px;letter-spacing:.25em;color:var(--sm)}
+.c-sys .lvn{display:block;font-size:52px;line-height:.9;font-weight:700;text-shadow:0 0 14px var(--sb);font-variant-numeric:tabular-nums}
+.c-sys .lvup{position:absolute;left:50%;top:-8px;transform:translateX(-50%);font-weight:700;font-size:12px;letter-spacing:.15em;color:var(--sgold);text-shadow:0 0 8px var(--sgold);opacity:0;white-space:nowrap}
+.c-sys .lvup.go{animation:sys-lvup .7s ease-out}
+@keyframes sys-lvup{0%{opacity:0;transform:translate(-50%,6px)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,-14px)}}
+.c-sys .ident{display:flex;flex-direction:column;gap:2px;font-size:15px;font-weight:600;min-width:0}
+.c-sys .ident span{display:inline-block;width:52px;font-size:11px;letter-spacing:.2em;color:var(--sm);font-weight:500}
+.c-sys .rank{text-align:center;color:#9aa6b2}
+.c-sys .rk{display:grid;place-items:center;width:48px;height:48px;margin-top:2px;border:2px solid currentColor;font-size:30px;font-weight:700;text-shadow:0 0 12px currentColor;box-shadow:inset 0 0 14px currentColor}
+.c-sys .rank[data-r="D"]{color:#5fe39a}.c-sys .rank[data-r="C"]{color:#49c6ff}.c-sys .rank[data-r="B"]{color:#a98bff}.c-sys .rank[data-r="A"]{color:#ffd36b}.c-sys .rank[data-r="S"]{color:#ff4d6a}
+.c-sys .rank.pulse .rk{animation:sys-pulse .45s ease-out}
+@keyframes sys-pulse{0%{transform:scale(1.5);filter:brightness(2)}100%{transform:none}}
+.c-sys .bars{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.c-sys .br{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;font-size:13px;font-weight:600}
+.c-sys .br i{height:8px;background:rgba(255,255,255,.08);border:1px solid rgba(73,198,255,.25)}
+.c-sys .br em{display:block;height:100%}
+.c-sys .hp em{background:linear-gradient(90deg,#c21f3a,#ff4d6a);box-shadow:0 0 8px #ff4d6a}
+.c-sys .mp em{background:linear-gradient(90deg,#1f6fd1,#49c6ff);box-shadow:0 0 8px #49c6ff}
+.c-sys .br span:last-child{color:var(--sm);font-variant-numeric:tabular-nums}
+.c-sys .stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 18px;border-top:1px solid rgba(73,198,255,.25);border-bottom:1px solid rgba(73,198,255,.25);padding:10px 0;margin-bottom:10px}
+.c-sys .st{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto 22px;gap:8px;align-items:center}
+.c-sys .st .k{font-weight:700;font-size:16px;letter-spacing:.08em}
+.c-sys .st .k small{font-weight:500;font-size:11px;letter-spacing:.05em;color:var(--sm);margin-left:6px}
+.c-sys .st b{font-size:18px;font-variant-numeric:tabular-nums;text-shadow:0 0 8px var(--sb)}
+.c-sys .plus{width:22px;height:22px;padding:0;border:1px solid var(--sb);background:rgba(73,198,255,.15);color:var(--st);font:700 15px/1 "Rajdhani",sans-serif;cursor:pointer}
+.c-sys .plus:hover:not(:disabled),.c-sys .plus:focus-visible{background:var(--sb);color:#02040a;outline:none}
+.c-sys .plus:disabled{opacity:.25;cursor:default}
+.c-sys .pts b{color:var(--sgold);text-shadow:0 0 8px var(--sgold)}
+.c-sys .plusone{position:absolute;right:34px;top:-6px;color:var(--sgold);font-weight:700;pointer-events:none;animation:sys-up .8s forwards}
+@keyframes sys-up{from{opacity:1;transform:none}to{opacity:0;transform:translateY(-16px)}}
+.c-sys .skills{display:flex;flex-wrap:wrap;gap:6px;font-size:13px}
+.c-sys .skills span{border:1px solid rgba(73,198,255,.3);padding:2px 8px;color:var(--sm)}
+.c-sys .skills b{color:var(--st)}
+.c-sys .quest h3{margin:0 0 8px;font-size:20px;text-align:center;letter-spacing:.04em}
+.c-sys .quest ul{list-style:none;margin:0 0 8px;padding:0;display:flex;flex-direction:column;gap:6px}
+.c-sys .quest li{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:600}
+.c-sys .quest li span{flex:1;min-width:0}
+.c-sys .quest li b{font-variant-numeric:tabular-nums;color:var(--sm)}
+.c-sys .quest li.done span{color:var(--sm);text-decoration:line-through}
+.c-sys .quest li.done b{color:#5fe39a;text-shadow:0 0 8px #5fe39a}
+.c-sys .warn{margin:0 0 6px;font-size:12.5px;color:#ff8a9a;line-height:1.3}
+.c-sys .timer{font-size:12px;letter-spacing:.15em;color:var(--sm);text-align:right}
+.c-sys .timer b{color:var(--st);font-size:15px;margin-left:6px;font-variant-numeric:tabular-nums}
+.c-sys .slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.c-sys .slot{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;border:1px dashed rgba(143,91,255,.35);padding:8px 4px;min-height:92px;text-align:center}
+.c-sys .slot .sil{width:36px;height:54px}
+.c-sys .slot .sil svg{width:100%;height:100%;display:block}
+.c-sys .slot span{font-size:11px;color:var(--sm);line-height:1.2}
+.c-sys .slot.on{border-style:solid;border-color:var(--sp);box-shadow:inset 0 0 18px rgba(143,91,255,.35)}
+.c-sys .slot.on .sil{color:#120a24;filter:drop-shadow(0 0 6px var(--sp)) drop-shadow(0 0 2px #c9b2ff);animation:sys-rise .8s cubic-bezier(.2,1.2,.4,1)}
+.c-sys .slot.on span{color:#d9c8ff}
+@keyframes sys-rise{from{transform:translateY(30px) scaleY(.2);opacity:0}}
+.c-sys .shadows .hint{margin:8px 0 0;font-size:12px;color:var(--sm);text-align:center}
+.c-sys .gates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.c-sys .gate{display:flex;align-items:center;gap:12px;text-align:left;padding:10px 12px;background:rgba(4,12,26,.85);border:1px solid var(--sg);color:var(--st);cursor:pointer;font-family:inherit;transition:box-shadow .2s,transform .2s}
+.c-sys .gate:hover,.c-sys .gate:focus-visible{box-shadow:0 0 20px rgba(73,198,255,.45);transform:translateY(-2px);outline:none}
+.c-sys .ring{flex:none;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle,#02060e 34%,transparent 36%),conic-gradient(#49c6ff,#0b2a4a,#9be4ff,#0b2a4a,#49c6ff);box-shadow:0 0 18px rgba(73,198,255,.6);animation:sys-spin 2.4s linear infinite}
+.c-sys .gate.red{border-color:rgba(255,59,78,.6)}
+.c-sys .gate.red .ring{background:radial-gradient(circle,#0e0204 34%,transparent 36%),conic-gradient(#ff3b4e,#3a0610,#ff9aa6,#3a0610,#ff3b4e);box-shadow:0 0 18px rgba(255,59,78,.6)}
+.c-sys .gate.red:hover,.c-sys .gate.red:focus-visible{box-shadow:0 0 20px rgba(255,59,78,.5)}
+.c-sys .gate.cleared .ring{animation:none;filter:grayscale(.7) brightness(.7)}
+@keyframes sys-spin{to{transform:rotate(360deg)}}
+.c-sys .gtx{display:flex;flex-direction:column;min-width:0}
+.c-sys .gtx small{font-size:11px;letter-spacing:.2em;color:var(--sm)}
+.c-sys .gate.red .gtx small{color:#ff8a9a}
+.c-sys .gtx b{font-size:17px}
+.c-sys .gtx em{font-style:normal;font-size:12px;font-weight:700;letter-spacing:.15em;color:var(--sb)}
+.c-sys .gate.cleared .gtx em{color:#5fe39a}
+.c-sys .portal{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:16px;background:#02040a}
+.c-sys .portal canvas{position:absolute;inset:0;width:100%;height:100%}
+.c-sys .ptxt{position:relative;font-weight:700;letter-spacing:.4em;font-size:clamp(14px,2vw,18px);text-shadow:0 0 10px var(--sb);animation:blink .5s steps(1) infinite;text-align:center}
+.c-sys .portal.red .ptxt{text-shadow:0 0 10px var(--sr);color:#ffd0d6}
+.c-sys .gwin{width:min(460px,100%)}
+.c-sys .portal.red .gwin{border-color:rgba(255,59,78,.6)}
+.c-sys .portal.red .gwin::before{--c:var(--sr)}
+.c-sys .gwin h3{margin:0;font-size:26px;text-align:center}
+.c-sys .gwin .meta{text-align:center;font-size:13px;letter-spacing:.15em;color:var(--sm);margin-bottom:10px}
+.c-sys .gwin p{margin:0 0 10px;font-size:16px;line-height:1.45}
+.c-sys .loot{font-size:14px;margin-bottom:14px;color:var(--sm)}.c-sys .loot b{color:var(--st)}
+.c-sys .ok{font-weight:700;letter-spacing:.2em;color:#5fe39a;padding:7px 4px}
+.c-sys .banner{position:absolute;left:0;right:0;top:40%;z-index:40;text-align:center;font:700 clamp(40px,8vw,88px)/1 "Rajdhani",sans-serif;letter-spacing:.2em;pointer-events:none;opacity:0;padding:0 16px}
+.c-sys .banner.go{animation:sys-banner 1.5s ease-out}
+.c-sys .banner.gold{color:var(--sgold);text-shadow:0 0 24px var(--sgold),0 0 4px #fff}
+.c-sys .banner.arise{font-family:"Cinzel",serif;color:#e9ddff;letter-spacing:.35em;text-indent:.35em;text-shadow:0 0 30px var(--sp),0 0 60px var(--sp),0 0 4px #fff;font-size:clamp(52px,12vw,130px)}
+.c-sys .banner.arise.go{animation:sys-arise 1.8s ease-out}
+@keyframes sys-banner{0%{opacity:0;transform:scale(1.4)}15%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}
+@keyframes sys-arise{0%{opacity:0;transform:scale(.9);filter:blur(12px)}25%{opacity:1;filter:none}80%{opacity:1}100%{opacity:0;transform:scale(1.15);filter:blur(6px)}}
+.c-sys .toasts{position:absolute;top:12px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(440px,calc(100% - 32px));pointer-events:none}
+.c-sys .toast{padding:8px 14px;font-size:15px;font-weight:500;text-align:center;animation:sys-open .45s cubic-bezier(.2,.9,.2,1);transition:opacity .35s,transform .35s;pointer-events:auto}
+.c-sys .toast.out{opacity:0;transform:translateY(-8px)}
+.c-sys .toast b{text-shadow:0 0 6px var(--sb)}
+.c-sys .toast.danger{border-color:rgba(255,59,78,.7)}.c-sys .toast.danger::before{--c:var(--sr)}.c-sys .toast.danger b{color:#ff8a9a;text-shadow:0 0 6px var(--sr)}
+.c-sys .toast.purple{border-color:rgba(143,91,255,.7)}.c-sys .toast.purple::before{--c:var(--sp)}.c-sys .toast.purple b{color:#d9c8ff;text-shadow:0 0 6px var(--sp)}
+@media (max-width:760px){.c-sys .hud{grid-template-columns:minmax(0,1fr);grid-template-areas:"status" "quest" "gates" "shadows"}.c-sys .gates{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:420px){.c-sys .stats{grid-template-columns:minmax(0,1fr)}.c-sys .lvn{font-size:42px}}
+
+
+@media (prefers-reduced-motion: reduce){.stage *{animation-duration:.01ms!important;animation-delay:0ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<div class="stage" id="stage"></div>
+<script>
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fit(cv, ctx){
+  const dpr = Math.min(devicePixelRatio || 1, 2), w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w*dpr) || cv.height !== Math.round(h*dpr)) { cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {w, h};
+}
+/* ───────── SYSTEM AWAKENING ───────── */
+const SYS_STATS = [['STR','Backend',78],['AGI','Frontend',92],['PER','Design',74],['VIT','Uptime',88],['INT','Architecture',85]];
+const SYS_GATES = [
+  {name:'Habit Tracker', rank:'C', stack:'EXPO · REACT NATIVE', desc:'A daily habit app with streaks, reminders and a home-screen widget. Cleared solo in six weeks.', loot:'<b>Case study</b> · <b>TestFlight</b> · <b>Source</b>', shadow:'Soldier'},
+  {name:'Realtime Chat', rank:'A', stack:'NEXT.JS · CONVEX', desc:'Live rooms with presence, typing indicators and reactions that sync in under 100 ms.', loot:'<b>Case study</b> · <b>Live demo</b> · <b>Source</b>', shadow:'Knight'},
+  {name:'This Portfolio', rank:'S', red:true, stack:'NEXT.JS · CANVAS', desc:'The dungeon you are standing in. Built to be explored, not scrolled.', loot:'<b>Behind the build</b> · <b>Source</b>', shadow:'Commander'},
+];
+const SHADOW_SVG = `<svg viewBox="0 0 40 60" aria-hidden="true"><path d="M20 3c-6 0-9.5 4.6-9.5 10.2 0 4 2 7 4.2 8.3L7.5 27 3.5 46l6 2 3.2-12.5V58h14.6V35.5L30.5 48l6-2-4-19-7.2-5.5c2.2-1.3 4.2-4.3 4.2-8.3C29.5 7.6 26 3 20 3z" fill="currentColor"/><path d="M15.5 13.5l3 1.2M24.5 13.5l-3 1.2" stroke="#e2d4ff" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+const SYS_INTRO = 'A visitor has been detected.\nYou have been granted access to the Player\'s profile.\n\nWill you accept?';
+function sysHTML(){
+  return `<div class="c-sys">
+    <canvas class="mist"></canvas>
+    <div class="iwrap"><div class="win intro open" role="dialog" aria-label="System notification">
+      <div class="wt">NOTIFICATION</div>
+      <p class="itxt"></p>
+      <div class="btns" hidden><button class="sbtn acc" type="button">ACCEPT</button><button class="sbtn ghost dec" type="button">DECLINE</button></div>
+    </div></div>
+    <div class="hud" hidden>
+      <section class="win status open">
+        <div class="wt">STATUS</div>
+        <div class="top">
+          <div class="lv"><small>LEVEL</small><b class="lvn">1</b><span class="lvup">LEVEL UP!</span></div>
+          <div class="ident">
+            <div><span>NAME</span>Nathaniel Adama</div>
+            <div><span>JOB</span>Full-Stack Developer</div>
+            <div><span>TITLE</span>The One Who Ships on Fridays</div>
+          </div>
+          <div class="rank" data-r="E"><small>RANK</small><b class="rk">E</b></div>
+        </div>
+        <div class="bars">
+          <div class="br hp"><span>HP</span><i><em style="width:100%"></em></i><span>9,999 / 9,999</span></div>
+          <div class="br mp"><span>MP</span><i><em style="width:80%"></em></i><span>Focus 640 / 800</span></div>
+        </div>
+        <div class="stats">
+          ${SYS_STATS.map(([k,l,v],i)=>`<div class="st"><span class="k">${k}<small>${l}</small></span><b class="sv">${v}</b><button class="plus" type="button" data-i="${i}" aria-label="Add a point to ${k}">+</button></div>`).join('')}
+          <div class="st pts"><span class="k">POINTS<small>spend them</small></span><b class="ptsn">5</b></div>
+        </div>
+        <div class="skills"><span>Passive · <b>Type Safety</b> Lv.MAX</span><span>Active · <b>Ship</b> Cooldown 0s</span><span>Active · <b>Realtime Sync</b> Lv.8</span></div>
+      </section>
+      <section class="win quest open">
+        <div class="wt">DAILY QUEST</div>
+        <h3>Hire a Developer</h3>
+        <ul>
+          <li data-g="gates"><span>Clear gates (view projects)</span><b>0/3</b></li>
+          <li data-g="points"><span>Allocate ability points</span><b>0/5</b></li>
+          <li data-g="msg"><span>Send the Player a message</span><button class="sbtn sm msgbtn" type="button">SEND</button><b>0/1</b></li>
+        </ul>
+        <p class="warn">WARNING: Leaving this quest incomplete may result in missing a great hire.</p>
+        <div class="timer">TIME REMAINING<b class="tmr">--:--:--</b></div>
+      </section>
+      <section class="win shadows open">
+        <div class="wt">SHADOWS</div>
+        <div class="slots">${SYS_GATES.map(()=>`<div class="slot"><div class="sil"></div><span>empty</span></div>`).join('')}</div>
+        <p class="hint">Clear a gate to extract its shadow.</p>
+      </section>
+      <div class="gates open">${SYS_GATES.map((g,i)=>`<button class="gate${g.red?' red':''}" type="button" data-i="${i}"><span class="ring"></span><span class="gtx"><small>${g.red?'RED GATE · ':''}RANK ${g.rank}</small><b>${g.name}</b><em>ENTER ›</em></span></button>`).join('')}</div>
+    </div>
+    <div class="portal" hidden><canvas></canvas><div class="ptxt"></div><div class="win gwin" hidden></div></div>
+    <div class="banner"></div>
+    <div class="toasts" aria-live="polite"></div>
+  </div>`;
+}
+function sysMist(cv, purpleFrac){
+  const ctx = cv.getContext('2d'); let raf;
+  const spawn = any => ({x:Math.random(), y:any ? Math.random() : 1.05, vy:.0006+Math.random()*.0016, r:.6+Math.random()*1.8, a:.2+Math.random()*.6, p:Math.random() < purpleFrac(), dx:(Math.random()-.5)*.0004});
+  const P = Array.from({length:80}, () => spawn(true));
+  function loop(){
+    const {w,h} = fit(cv, ctx); ctx.clearRect(0,0,w,h); ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < P.length; i++) {
+      const q = P[i]; q.y -= q.vy; q.x += q.dx;
+      if (q.y < -.05) P[i] = spawn(false);
+      const c = q.p ? '143,91,255' : '73,198,255';
+      ctx.fillStyle = `rgba(${c},${q.a*.22})`; ctx.beginPath(); ctx.arc(q.x*w, q.y*h, q.r*3, 0, 7); ctx.fill();
+      ctx.fillStyle = `rgba(${c},${q.a})`; ctx.beginPath(); ctx.arc(q.x*w, q.y*h, q.r, 0, 7); ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    if (!RM) raf = requestAnimationFrame(loop);
+  }
+  loop();
+  return () => cancelAnimationFrame(raf);
+}
+function portalFx(cv){
+  const ctx = cv.getContext('2d'); let mode = 'portal', col = '73,198,255', raf, t = 0;
+  const P = Array.from({length:260}, () => ({a:Math.random()*Math.PI*2, r:Math.random(), s:.01+Math.random()*.02, z:Math.random()*2+.6, x:Math.random(), y:Math.random()*1.2, vy:.004+Math.random()*.01}));
+  const first = fit(cv, ctx); ctx.fillStyle = '#02040a'; ctx.fillRect(0,0,first.w,first.h);
+  function loop(){
+    t += .016;
+    const {w,h} = fit(cv, ctx), cx = w/2, cy = h/2, R = Math.max(w,h)*.6;
+    ctx.fillStyle = 'rgba(2,4,10,.22)'; ctx.fillRect(0,0,w,h); ctx.globalCompositeOperation = 'lighter';
+    if (mode === 'portal') {
+      const g = ctx.createRadialGradient(cx,cy,0,cx,cy,R*.5);
+      g.addColorStop(0, `rgba(${col},${.18+.08*Math.sin(t*6)})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+      for (const p of P) {
+        p.a += p.s*(1.5-p.r); p.r -= .006; if (p.r < .02) p.r = 1;
+        ctx.fillStyle = `rgba(${col},${.8*(1-p.r)+.15})`;
+        ctx.fillRect(cx + Math.cos(p.a)*p.r*R, cy + Math.sin(p.a)*p.r*R*.62, p.z, p.z);
+      }
+    } else {
+      for (const p of P) {
+        p.y -= p.vy; if (p.y < -.1) { p.y = 1.05; p.x = Math.random(); }
+        ctx.fillStyle = `rgba(${col},.7)`; ctx.beginPath(); ctx.arc(p.x*w + Math.sin(t*2+p.a)*8, p.y*h, p.z*1.4, 0, 7); ctx.fill();
+      }
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    raf = requestAnimationFrame(loop);
+  }
+  loop();
+  return {set(m, c){ mode = m; col = c; }, stop(){ cancelAnimationFrame(raf); }};
+}
+function sysInit(root){
+  const $ = s => root.querySelector(s);
+  const timers = [], later = (f, ms) => timers.push(setTimeout(f, ms));
+  const intro = $('.intro'), iwrap = $('.iwrap'), itxt = $('.itxt'), ibtns = $('.intro .btns'), hud = $('.hud');
+  const toasts = $('.toasts'), bannerEl = $('.banner'), portal = $('.portal'), ptxt = $('.ptxt'), gwin = $('.gwin');
+  const stats = SYS_STATS.map(s => s[2]), vals = [...root.querySelectorAll('.sv')], slots = [...root.querySelectorAll('.slot')];
+  let points = 5, allocated = 0, contacted = false, done = false, declines = 0, shadowCount = 0, fx = null;
+  const cleared = new Set();
+  const stopMist = sysMist($('.mist'), () => shadowCount/3*.7);
+
+  function toast(html, ms = 2800, cls = ''){
+    const t = document.createElement('div'); t.className = 'win toast ' + cls; t.innerHTML = html;
+    toasts.appendChild(t);
+    while (toasts.children.length > 3) toasts.firstChild.remove();
+    later(() => t.classList.add('out'), ms); later(() => t.remove(), ms + 400);
+  }
+  function banner(text, cls){ bannerEl.textContent = text; bannerEl.className = 'banner ' + cls; void bannerEl.offsetWidth; bannerEl.classList.add('go'); }
+  function retrigger(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+  // intro
+  function typeIntro(){
+    if (RM) { itxt.textContent = SYS_INTRO; ibtns.hidden = false; return; }
+    let i = 0;
+    (function step(){ itxt.textContent = SYS_INTRO.slice(0, ++i); if (i < SYS_INTRO.length) later(step, SYS_INTRO[i-1] === '\n' ? 180 : 22); else ibtns.hidden = false; })();
+  }
+  later(typeIntro, RM ? 0 : 1000);
+  // Reference-capture hooks: #hud auto-accepts, #gate also opens the red gate.
+  if (location.hash === '#hud' || location.hash === '#gate') later(accept, 3600);
+  if (location.hash === '#gate') later(() => openGate(2), 7600);
+  function accept(){
+    intro.classList.add('close');
+    later(() => { iwrap.hidden = true; hud.hidden = false; later(levelUp, RM ? 0 : 650); }, RM ? 0 : 360);
+  }
+  $('.acc').addEventListener('click', accept);
+  $('.dec').addEventListener('click', () => {
+    declines++;
+    if (declines === 1) { toast('<b>[ WARNING ]</b> Declining is not permitted.', 2600, 'danger'); intro.classList.remove('open'); retrigger(intro, 'shake'); }
+    else { toast('<b>[ SYSTEM ]</b> The System has accepted on your behalf.', 2600, 'danger'); accept(); }
+  });
+
+  // level climb
+  function levelUp(){
+    const lvn = $('.lvn'), lvup = $('.lvup'), rankBox = $('.rank'), rk = $('.rk'), target = 27;
+    const rankOf = v => v >= 26 ? 'S' : v >= 21 ? 'A' : v >= 16 ? 'B' : v >= 11 ? 'C' : v >= 6 ? 'D' : 'E';
+    let lv = 1, last = 'E';
+    const finish = () => {
+      banner('LEVEL UP', 'gold');
+      toast('<b>[ RANK ]</b> Player rank reassessed: <b>S</b>');
+      later(() => toast('<b>[ DAILY QUEST ]</b> “Hire a Developer” has arrived.', 3200), 1000);
+    };
+    if (RM) { lvn.textContent = target; rk.textContent = 'S'; rankBox.dataset.r = 'S'; finish(); return; }
+    (function up(){
+      lv++; lvn.textContent = lv;
+      const r = rankOf(lv);
+      if (r !== last) { last = r; rk.textContent = r; rankBox.dataset.r = r; retrigger(rankBox, 'pulse'); }
+      if (lv % 3 === 0) retrigger(lvup, 'go');
+      if (lv < target) later(up, 40 + (lv/target)*80); else finish();
+    })();
+  }
+
+  // quest
+  function setGoal(g, v, max){ const li = root.querySelector(`li[data-g="${g}"]`); li.querySelector('b').textContent = `${v}/${max}`; li.classList.toggle('done', v >= max); }
+  function quest(){
+    setGoal('gates', cleared.size, 3); setGoal('points', allocated, 5); setGoal('msg', contacted ? 1 : 0, 1);
+    if (!done && cleared.size === 3 && allocated === 5 && contacted) {
+      done = true;
+      later(() => { banner('QUEST COMPLETE', 'gold'); toast('<b>[ REWARD ]</b> Title acquired: <b>“Talent Scout”</b>. The Player replies within 24h.', 5000); }, 700);
+    }
+  }
+  root.querySelectorAll('.plus').forEach(b => b.addEventListener('click', () => {
+    if (points <= 0) return;
+    const i = +b.dataset.i; stats[i]++; points--; allocated++;
+    vals[i].textContent = stats[i]; $('.ptsn').textContent = points;
+    const f = document.createElement('span'); f.className = 'plusone'; f.textContent = '+1'; b.parentElement.appendChild(f); later(() => f.remove(), 820);
+    if (!points) root.querySelectorAll('.plus').forEach(x => { x.disabled = true; });
+    toast(`<b>${SYS_STATS[i][0]}</b> increased by 1.`, 1500);
+    quest();
+  }));
+  $('.msgbtn').addEventListener('click', e => {
+    contacted = true; e.currentTarget.disabled = true;
+    toast('<b>[ MESSAGE ]</b> Channel open: <b>hello@yourdomain.dev</b>', 5000);
+    quest();
+  });
+  const tmr = $('.tmr');
+  const tk = () => { const now = new Date(), m = new Date(now); m.setHours(24,0,0,0); const s = Math.floor((m - now)/1000); tmr.textContent = [Math.floor(s/3600), Math.floor(s%3600/60), s%60].map(n => String(n).padStart(2,'0')).join(':'); };
+  tk(); const iv = setInterval(tk, 1000);
+
+  // gates
+  function closePortal(){ portal.hidden = true; if (fx) { fx.stop(); fx = null; } }
+  function openGate(i){
+    const g = SYS_GATES[i], red = !!g.red, wasCleared = cleared.has(i);
+    portal.hidden = false; portal.classList.toggle('red', red); gwin.hidden = true;
+    if (!fx) fx = portalFx(portal.querySelector('canvas'));
+    fx.set('portal', red ? '255,59,78' : '73,198,255');
+    ptxt.hidden = false; ptxt.textContent = wasCleared ? 'RE-ENTERING CLEARED GATE' : `ENTERING ${red ? 'RED ' : ''}GATE · RANK ${g.rank}`;
+    if (red && !wasCleared) later(() => toast('<b>[ WARNING ]</b> This is a red gate. You cannot leave until it is cleared.', 3400, 'danger'), 300);
+    later(() => {
+      ptxt.hidden = true;
+      gwin.innerHTML = `<div class="wt">GATE · RANK ${g.rank}</div><h3>${g.name}</h3><div class="meta">${g.stack}</div><p>${g.desc}</p><div class="loot">Loot: ${g.loot}</div>
+        <div class="btns">${wasCleared ? '<span class="ok">CLEARED ✓</span>' : '<button class="sbtn ext" type="button">EXTRACT SHADOW</button>'}${!red || wasCleared ? '<button class="sbtn ghost lv" type="button">LEAVE</button>' : ''}</div>`;
+      gwin.hidden = false; gwin.classList.remove('open'); retrigger(gwin, 'open');
+      const ext = gwin.querySelector('.ext'), lv = gwin.querySelector('.lv');
+      if (ext) ext.addEventListener('click', () => arise(i));
+      if (lv) lv.addEventListener('click', closePortal);
+      (ext || lv).focus();
+    }, RM ? 0 : 1200);
+  }
+  function arise(i){
+    const g = SYS_GATES[i];
+    gwin.hidden = true; fx.set('arise', '143,91,255'); banner('ARISE', 'arise');
+    later(() => {
+      closePortal(); cleared.add(i);
+      const slot = slots[shadowCount++]; slot.classList.add('on');
+      slot.querySelector('.sil').innerHTML = SHADOW_SVG; slot.querySelector('span').textContent = `${g.shadow} · ${g.name}`;
+      const gate = root.querySelector(`.gate[data-i="${i}"]`); gate.classList.add('cleared'); gate.querySelector('em').textContent = 'CLEARED ✓';
+      toast(`<b>[ SHADOW EXTRACTED ]</b> ${g.name} joined the army as <b>${g.shadow}</b>.`, 3000, 'purple');
+      quest();
+    }, RM ? 0 : 1700);
+  }
+  root.querySelectorAll('.gate').forEach(b => b.addEventListener('click', () => openGate(+b.dataset.i)));
+
+  return () => { timers.forEach(clearTimeout); clearInterval(iv); stopMist(); if (fx) fx.stop(); };
+}
+
+
+const stage = document.getElementById('stage');
+stage.innerHTML = sysHTML();
+sysInit(stage.firstElementChild);
+</script>
+</body>
+</html>
