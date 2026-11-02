@@ -1,6 +1,6 @@
-// Placeholder content from the prototype. Replace with real values before launch (SPEC §11).
+// Real content. HP/MP labels are intentional jokes; stat values are self-ratings.
 
-export type StatKey = "STR" | "AGI" | "PER" | "VIT" | "INT";
+export type StatKey = "STR" | "AGI" | "PER" | "VIT" | "INT" | "WIS";
 
 export interface Profile {
   name: string;
@@ -19,9 +19,9 @@ export interface Profile {
 
 export const profile: Profile = {
   name: "Nathaniel Adama",
-  job: "Full-Stack Developer",
+  job: "Co-founder · Full-Stack Engineer",
   title: "The One Who Ships on Fridays",
-  level: 27,
+  level: 70,
   hp: { label: "9,999 / 9,999", pct: 100 },
   mp: { label: "Focus 640 / 800", pct: 80 },
   stats: [
@@ -29,22 +29,24 @@ export const profile: Profile = {
     { key: "AGI", label: "Frontend", value: 92 },
     { key: "PER", label: "Design", value: 74 },
     { key: "VIT", label: "Uptime", value: 88 },
-    { key: "INT", label: "Architecture", value: 85 },
+    { key: "INT", label: "AI", value: 82 },
+    { key: "WIS", label: "Architecture", value: 85 },
   ],
   points: 5,
   skills: [
     { kind: "Passive", name: "Type Safety", level: "Lv.MAX" },
     { kind: "Active", name: "Ship", level: "Cooldown 0s" },
-    { kind: "Active", name: "Realtime Sync", level: "Lv.8" },
+    { kind: "Active", name: "Cross-Platform", level: "iOS · Android · Web" },
   ],
   log: [
-    { text: "Shipped Realtime Chat v2", when: "3d ago" },
-    { text: "Cleared a 40-file TypeScript migration", when: "1w ago" },
-    { text: "Habit Tracker passed 1,000 streaks", when: "2w ago" },
+    { text: "Shipped the Xolace profile redesign (PR #666)", when: "Oct 2026" },
+    { text: "3,719 GitHub contributions in a year", when: "2026" },
+    { text: "Added live tallies and SMS recovery to COMPSSA Elect", when: "Aug 2026" },
   ],
-  email: "hello@yourdomain.dev",
+  email: "nathan@xolaceinc.com",
   socials: [
-    { label: "GitHub", href: "https://github.com/" },
-    { label: "LinkedIn", href: "https://www.linkedin.com/" },
+    { label: "GitHub", href: "https://github.com/s-kvng" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/nathaniel-e-adama-93802a234/" },
+    { label: "X", href: "https://x.com/sirr_nathan" },
   ],
 };
