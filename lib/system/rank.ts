@@ -1,12 +1,12 @@
 import type { Rank } from "@/content/gates";
 
-/** E 1–5, D 6–10, C 11–15, B 16–20, A 21–25, S 26+ */
+/** Levels run 1–100: E 1–19, D 20–39, C 40–59, B 60–79, A 80–99, S 100. */
 export function rankOf(level: number): Rank {
-  if (level >= 26) return "S";
-  if (level >= 21) return "A";
-  if (level >= 16) return "B";
-  if (level >= 11) return "C";
-  if (level >= 6) return "D";
+  if (level >= 100) return "S";
+  if (level >= 80) return "A";
+  if (level >= 60) return "B";
+  if (level >= 40) return "C";
+  if (level >= 20) return "D";
   return "E";
 }
 

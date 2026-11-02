@@ -72,6 +72,9 @@ function StatusTop({ profile }: { profile: Profile }) {
     }
 
     let lv = 1;
+    // Keep the whole count-up near the ~2.2 s it takes to reach 27, however high the level.
+    const pace = Math.min(1, 27 / target);
+    const floatEvery = Math.max(3, Math.round(target / 9));
     const up = () => {
       lv += 1;
       setCount(lv);
@@ -81,11 +84,11 @@ function StatusTop({ profile }: { profile: Profile }) {
           duration: 450,
           easing: "cubic-bezier(0.23, 1, 0.32, 1)",
         });
-        if (lv >= 26) setAura((a) => a + 1);
+        if (rankOf(lv) === "S") setAura((a) => a + 1);
       }
-      if (lv % 3 === 0) setFloats((f) => [...f.slice(-2), lv]);
-      // The step interval eases from 40 ms to ~120 ms, so it slows into the finish.
-      if (lv < target) id = window.setTimeout(up, 40 + (lv / target) * 80);
+      if (lv % floatEvery === 0) setFloats((f) => [...f.slice(-2), lv]);
+      // The step interval eases from 40 ms to ~120 ms (scaled by pace), so it slows into the finish.
+      if (lv < target) id = window.setTimeout(up, (40 + (lv / target) * 80) * pace);
       else id = window.setTimeout(finish, 160);
     };
     // Mana surges while the Player levels.

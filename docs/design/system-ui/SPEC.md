@@ -63,7 +63,7 @@ notification ──accept──▶ awakening (level count-up) ──done──�
 | Notification text types | Starts at 1.0 s. 22 ms per character, 180 ms pause on each newline. Buttons appear when typing ends. |
 | Accept | Window closes in 350 ms (reverse of opening). |
 | HUD windows open | Staggered: status 0 ms, quest 150 ms, shadows 300 ms, gates 450 ms. Same open animation. |
-| Level count-up | Starts 650 ms after the HUD shows. Counts 1 → 27, with the step interval easing from 40 ms to about 120 ms. A small gold "LEVEL UP!" floats above the number every 3 levels. The rank badge pulses on each tier change. |
+| Level count-up | Starts 650 ms after the HUD shows. Counts 1 → the profile level, with the step interval easing from 40 ms to about 120 ms, scaled down for levels above 27 so the count always takes about 2.2 s. A small gold "LEVEL UP!" floats above the number every 3 levels (more apart for high levels, about 9 floats in total). The rank badge pulses on each tier change. |
 | Count-up ends | "LEVEL UP" banner (1.5 s). Toast `[ RANK ] Player rank reassessed: S`. One second later, toast `[ DAILY QUEST ] "Hire a Developer" has arrived.` |
 | Enter gate | Full-screen portal swirl for 1.2 s, then the gate window opens. |
 | Extract shadow | "ARISE" banner (1.8 s) over rising purple particles, then close the overlay and rise the shadow into its slot (0.8 s). |
@@ -101,7 +101,7 @@ All windows share one frame (section 5.3). Everything listed here is in the prot
   - POINTS 5 (gold)
 - Clicking `+`: the stat goes up by 1, points go down by 1, a gold "+1" floats up, and the toast `AGI increased by 1.` appears. At 0 points, all `+` buttons disable.
 - Skill chips: `Passive · Type Safety Lv.MAX`, `Active · Ship Cooldown 0s`, `Active · Realtime Sync Lv.8`.
-- Rank tiers: **E** 1–5, **D** 6–10, **C** 11–15, **B** 16–20, **A** 21–25, **S** 26+. Colors are in section 5.1.
+- Rank tiers (levels 1–100): **E** 1–19, **D** 20–39, **C** 40–59, **B** 60–79, **A** 80–99, **S** 100. Colors are in section 5.1.
 
 ### 4.3 Daily quest (the navigation)
 - Title chip `DAILY QUEST`, heading **Hire a Developer**.
@@ -351,7 +351,7 @@ The quest goal "Clear gates 0/N" uses `gates.length`, and there is one shadow sl
 ## 9. Acceptance criteria
 
 - [ ] A first visit shows the notification, typing, and Accept/Decline, including both decline behaviors.
-- [ ] Accepting runs the HUD open stagger, the level 1 → 27 count-up with rank tiers E→S and pulses, then the LEVEL UP banner and both toasts.
+- [ ] Accepting runs the HUD open stagger, the level 1 → profile level count-up with rank tiers E→S and pulses, then the LEVEL UP banner and both toasts.
 - [ ] Spending all 5 points updates stats, disables the `+` buttons, and completes quest goal 2.
 - [ ] Each gate runs portal → window → extract → ARISE → shadow slot fills → gate shows CLEARED → quest counter goes up.
 - [ ] The red gate hides LEAVE until it is cleared and shows the warning, and Esc still exits on the second press.
